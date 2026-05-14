@@ -1,0 +1,69 @@
+Github repo:
+https://github.com/amkessler/gw_smpa_finalwrapsession
+
+---
+
+SCRAPING:
+
+Here are some resources about scraping in R:
+https://blog.rstudio.com/2014/11/24/rvest-easy-web-scraping-with-r/
+https://stat4701.github.io/edav/2015/04/02/rvest_tutorial/
+
+Automated scraping:
+
+DownThemAll Extension:
+https://chrome.google.com/webstore/detail/downthemall/nljkibfhlpcnanjgbnlnbjecgicbjkge?hl=en
+
+---
+REAL-WORLD SAMPLE EXAMPLE
+
+We'll look at the creation of just one particular chart selected from this recent piece:
+https://www.bloomberg.com/graphics/2021-citylab-how-americans-moved/
+
+--- 
+
+OTHER TOOLS:
+
+PDF conversion:
+https://www.cometdocs.com/
+
+Cleaning with OpenRefine:
+https://openrefine.org/
+
+Find old version of website - Wayback Machine:
+https://archive.org/
+
+---
+
+VISUALIZATION TOOLS:
+
+Datawrapper:
+https://www.datawrapper.de/
+
+Infogram:
+https://infogram.com/
+
+---
+
+CAREER RESOURCES:
+
+IRE/NICAR
+https://www.ire.org/
+https://www.ire.org/resource-center/listservs/subscribe-to-nicar-l
+
+SRCCON Community:
+https://srccon.org/
+
+News Nerdery Slack
+https://newsnerdery.org/
+
+RLadies:
+https://rladies.org/
+https://www.meetup.com/rladies-dc/
+
+JOC Slack:
+https://journalistsofcolor.us/
+
+
+
+

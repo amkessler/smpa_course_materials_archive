@@ -1,0 +1,143 @@
+---
+title: "Joining Assignment"
+author: "Put Name Here"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+options(scipen=999)
+library(tidyverse)
+library(janitor)
+```
+
+## Getting Started
+
+This week we'll be combining and joining data to make it more useful and to ask some questions about it. We'll use Maryland 2022 primary election results to do this, and our main question will be this: Which precincts had the most votes cast at them statewide, counting both the Republican and Democratic primaries?
+
+To answer this question, we'll need to first combine the two parties' primary precinct results into a single dataframe and then join it to data that has more information about each voting location.
+
+First, load the two precinct results CSV files in the `data` folder, one each for the Democratic and Republican primaries, and then combine them into a single dataframe. You'll need to clean up the column names to make the data easier to work with - make sure you have loaded the library to do that.
+
+Load the two datasets here:
+
+```{r}
+primary_dem <- read_csv("data/md_primary_precinct_dem.csv") %>% 
+  mutate(`Election District - Precinct` = as.character(`Election District - Precinct`))
+
+glimpse(primary_dem)
+
+primary_rep <- read_csv("data/md_primary_precinct_rep.csv") %>% 
+  mutate(`Election District - Precinct` = as.character(`Election District - Precinct`))
+```
+
+Now Combine (stack) the two dataframes into one combined dataframe, so all the records from both tables are in one place to use.
+
+```{r}
+
+
+
+
+
+
+```
+
+Then use janitor's clean_names() function to clean up the column names so all spaces, punctuation and letter cases are dealt with.
+
+To use clean_names() you apply it to your dataframe like:
+
+`data <- data %>%`
+
+`clean_names()`
+
+```{r}
+
+
+
+
+
+```
+
+Next, let's read in the precinct voting location data and clean up the column names:
+
+```{r}
+precinct_voting_locations <- read_csv('data/precinct_voting_locations.csv') %>%
+                                clean_names()
+
+```
+
+Next use left_join() to join the two tables based on the unique combination of precinct and county. When joining on two sets of columns, you'll use the `by =` argument in your join function along with the `c()`, like this:
+
+`by = c("firstcolumn_table1" = "firstcolumn_table2", "secondcolumn_table1" = "secondcolumn_table2"))`
+
+```{r}
+
+
+
+
+
+
+```
+
+## Answer questions
+
+### Q1.
+
+Write code to produce a `votes` column which is the result of adding together `early_votes`, `election_night_votes`, `provisional_votes` and the mail-in votes, overwriting your dataframe so that it now has that `total_votes` column permanently.
+
+```{r}
+
+
+
+```
+
+Next, separately write code to show each county and precinct and calculate the total votes in the Governor's race - bearing in mind that each precinct will have multiple rows in the dataframe, but you only want to see one row for each precinct. (So you'll want to use grouping and summarizing.)
+
+```{r}
+
+
+
+
+
+```
+
+What is the name and voting location of the precinct that saw the most votes in the governor's race? *Put answer here*
+
+### Q2.
+
+Let's look at the average number of votes in each party's primary race for governor. Take the code you wrote for the last part of Q2, save the results to a new variable and then find the precincts with 0 total votes for governor.
+
+```{r}
+
+
+
+
+
+
+```
+
+How many precincts are there, and which county has the most? *Put answer here*
+
+What else would you need to know about these precincts to know whether this might be worth a story? *Put answer here*
+
+### Q3.
+
+Choose your own adventure: I want you to come up with a question you could ask of one of the dataframes we've created for this lab. It could involve candidates, or counties or types of voting, but it cannot be a variation of a previous question (so, for example, you can't ask, "What's the average number of votes per precinct in the U.S. Senate primary?").
+
+First write the question and then try to answer it by writing code. If you're not sure of the exact code at a minimum, describe what you think you'd have to do to answer it and what the results would look like.
+
+```{r}
+
+
+
+
+
+```

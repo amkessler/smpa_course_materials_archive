@@ -1,0 +1,130 @@
+---
+title: "Financial Data using TidyQuant"
+author: "Aaron Kessler"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+    theme: yeti
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidyquant)
+
+
+```
+
+```{r}
+# set the stock ticker and the start and end dates for the data that you want to download. For example:
+
+ticker <- "MSFT"  # Set the stock ticker
+```
+
+```{r}
+# Use the tq_get() function from the tidyquant package to download the stock data. This function returns a data frame containing the date, open, high, low, and close prices for each day. For example:
+
+stock_data <- tq_get(ticker, get = "stock.prices", from = "2022-01-01")
+
+stock_data
+```
+
+```{r}
+# Use the ggplot2 package to create a line chart of the stock's closing price over time. You can do this by using the ggplot() and geom_line() functions, and setting the x aesthetic to the date column and the y aesthetic to the close column. For example:
+
+ggplot(stock_data, aes(x = date, y = close)) +
+  geom_line()
+```
+
+```{r}
+############
+
+#with only a start and no end date
+aapl_prices  <- tq_get("AAPL", get = "stock.prices", from = "2022-01-01")
+aapl_prices
+```
+
+```{r}
+aapl_prices %>% 
+  arrange(desc(date))
+```
+
+```{r}
+aapl_prices %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "Apple Stock Price", y = "Closing Price", x = "")
+```
+
+```{r}
+# simple moving averages
+
+aapl_prices %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "Apple Stock Price", y = "Closing Price", x = "") +
+  geom_ma(ma_fun = SMA, n = 50, color = "red", size = 1.25) +
+  theme_minimal()
+```
+
+```{r}
+### multiple companies
+
+
+#with only a start and no end date
+mycompanies  <- tq_get(c("AAPL", "MSFT", "NYT", "XOM"), 
+                       get = "stock.prices", 
+                       from = "2022-01-01")
+mycompanies 
+
+mycompanies %>% 
+  count(symbol)
+```
+
+```{r}
+mycompanies %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "", y = "Closing Price", x = "") +
+  facet_wrap(~ symbol, ncol = 2, scale = "free_y")
+```
+
+```{r}
+# simple moving averages
+
+mycompanies %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "", y = "Closing Price", x = "") +
+  geom_ma(ma_fun = SMA, n = 50, color = "red", size = 1.25) +
+  facet_wrap(~ symbol, ncol = 2, scale = "free_y") +
+  theme_minimal()
+```
+
+```{r}
+# FRED Economic Data
+# A wealth of economic data can be extracted from the Federal Reserve Economic Data (FRED) database. The FRED contains over 10K data sets that are free to use. See the FRED categories to narrow down the data base and to get data codes. 
+# categories: https://fred.stlouisfed.org/categories
+```
+
+```{r}
+# US Regular All Formulations Gas Price (GASREGW), weekly
+gasprices_weekly <- tq_get("GASREGW", get = "economic.data", from = "2022-01-01")
+gasprices_weekly
+```
+
+```{r}
+ggplot(gasprices_weekly, aes(x = date, y = price)) +
+  geom_line(color = "darkred") +
+  theme_minimal()
+```
+
+```{r}
+# 30 year mortgage rate average, weekly
+mortgate_30yr_weekly <- tq_get("MORTGAGE30US", get = "economic.data", from = "2022-01-01")
+mortgate_30yr_weekly
+```

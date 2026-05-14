@@ -1,0 +1,107 @@
+---
+title: "Joining Review"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+
+```
+
+## Load data
+
+```{r}
+
+superheroes <- readRDS(here("data","superheroes.rds"))
+publishers <- readRDS(here("data","publishers.rds")) 
+
+```
+
+```{r}
+
+superheroes
+
+publishers
+
+```
+
+## "Inner" Join
+
+The most common type we'll use early on. Looks for only when things match up in both tables.
+
+
+Let's do it... we'll use dplyr's `inner_join()` function.
+
+```{r}
+
+inner_join(superheroes, publishers)
+
+
+```
+
+Wait, how did it even know what to join?
+
+By default it looks for column names in columns. This can be good, but also can give you problems if you're not careful.
+
+How do we tell R to specifically match on a column?
+
+```{r}
+
+inner_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Left Join
+
+This is for when you want *everything* from the first table no matter what, but joining up those that match from the second.
+
+
+
+Let's give it a try...
+
+```{r}
+
+left_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Full Join
+
+This is for when you want *everything* from *both* tables no matter what....matching where they match, and leaving blank where they don't.
+
+
+
+Let's give it a go...
+
+```{r}
+
+full_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Anti-Join
+
+Finally, there's the "anti" join, which sounds like what it is -- looking for records in one table that are *not* in the other based on the matching variable.
+
+
+
+Let's try it...
+
+```{r}
+
+anti_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+

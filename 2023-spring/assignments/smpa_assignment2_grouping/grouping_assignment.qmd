@@ -1,0 +1,173 @@
+---
+title: "SMPA - Grouping Assignment"
+author: "YourNameHere"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r}
+
+#load libraries
+library(tidyverse)
+library(lubridate)
+
+#load data
+payments <- readRDS("data/trump_campaign_payments.rds")
+
+```
+
+## Introduction
+
+**What data will you be working with?**
+
+A dataset of disbursements (payments and purchases) by the Donald J. Trump for President campaign committee during the 2020 election cycle. The included payments are from 2017 and 2018.
+
+This data and examples were developed as part of the NYT Open training, which we've adapted from here. Note that the dataset has been alterted for instructional purposes, so doesn't represent the original FEC data in its entirety.
+
+In the environment tab in the upper right, click on the `payments` dataset to open the RStudio viewer to examine the data. You can also run the chunk below as well to bring up a slice of the data.
+
+```{r}
+
+head(payments)
+
+
+```
+
+## Before you begin
+
+Take a moment to look at the various categories included for each disbursement.
+
+-   Notice that there are several date-related fields:
+
+    -   FEC election cycle
+
+    -   report year
+
+    -   election type
+
+    -   disbursement date
+
+-   There are a few fields about the recipient. Along with city and state, you have:
+
+    -   the recipient name
+
+    -   the payee's first and last name (an individual who was paid for the "recipient") and
+
+    -   the entity type (individual v. organization)
+
+## Initial Narrative Questions
+
+Without doing any analysis yet, what are three questions you might try to answer using this dataset? Write your narrative answers in the spaces below.
+
+1.  
+
+2.  
+
+3.  
+
+## Coding Assignment Questions
+
+**Please write your R tidyverse code to help answer the questions below in the provided R chunks. You can make more than one chunk if you prefer.**
+
+**Also, describe what you're doing either in text out "in the open" above the chunk, or in comments (prefaced by #) in the R chunk itself.**
+
+**You'll need to use grouping, filtering, or a combination of both to find the answers. Remember that R is case-sensitive when you refer to any text values within the columns**
+
+<br>
+
+How much was spent in the 2017 vs. 2018 reporting year?
+
+```{r}
+
+
+
+
+
+
+
+```
+
+Tally the total overall disbursement amounts for each month (distinguishing between say, Oct. 2018 v. Oct. 2019). In which month was spending the highest?
+
+```{r}
+
+
+
+
+
+
+```
+
+Which recipient (recipient_name) was paid the most in the 2020 election cycle?
+
+```{r}
+
+
+
+
+
+
+
+```
+
+Look at what this recipient was paid for. What service or good (see the "disbursement_description") were they paid the most for?
+
+```{r}
+
+
+
+
+
+
+```
+
+What's the most common category overall (see "disbursement_description") the campaign spent money on?
+
+```{r}
+
+
+
+
+
+
+```
+
+Who were the 5 biggest recipients of campaign spending on "LEGAL CONSULTING"..?
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+Who are the top 5 individuals (vs. organization) were paid by the campaign committee?
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+For the indvidual who was paid the most, which payment category (disbursement_description) was the top one for him or her? And how much money were they paid in that category?
+
+```{r}
+
+
+
+
+
+
+
+```

@@ -1,0 +1,957 @@
+---
+title: "Interactive Data Visualization with Plotly in R"
+author: "Aaron Kessler"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+
+# The material here comes from the excellent R Plotly walkthrough, with my annotations and slight changes at certain points:
+# https://medium.com/swlh/step-by-step-data-visualization-guideline-with-plotly-in-r-fbd212640de2  
+# As well as selected examples from here:
+# https://blog.methodsconsultants.com/posts/plotly-for-r-multi-layer-plots/
+
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+library(zoo)  # For data interpolation
+
+
+```
+
+## Learning Objectives
+
+By the end of this tutorial, you will be able to:
+
+- Create basic interactive plots using Plotly in R
+- Customize plot appearance, colors, and styling
+- Build multi-layer visualizations
+- Understand when to use different chart types
+- Implement accessibility and mobile-responsive best practices
+- Handle missing data and validate inputs properly
+- Optimize performance for large datasets
+- Export plots for web publishing and print media
+- Add advanced interactivity features to enhance user experience
+
+## Introduction
+
+Plotly is a powerful R package that creates interactive, web-based visualizations. Unlike static plots, Plotly charts allow users to hover, zoom, and interact with data, making them ideal for exploratory analysis and presentations.
+
+For this tutorial we'll use built-in R datasets like "iris" and "diamonds," and also create example datasets to demonstrate key concepts.
+
+
+## Data Exploration
+
+Before creating visualizations, let's explore our primary dataset - the famous iris dataset containing measurements of flower characteristics.
+
+```{r}
+# Load and examine the iris dataset
+iris <- iris %>% as_tibble()
+
+# View the structure and first few rows
+glimpse(iris)
+head(iris)
+
+# Summary statistics
+summary(iris)
+```
+
+## Basic Charts
+
+### Scatterplots
+
+Scatterplots are ideal for showing relationships between two continuous variables. They're particularly useful for identifying correlations, clusters, and outliers.
+
+```{r}
+# Create a basic scatterplot
+fig <- plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length)
+
+fig
+```
+
+### Customizing Plot Appearance
+
+Plotly offers extensive customization options for colors, sizes, and styling to make your visualizations more effective and visually appealing.
+
+```{r}
+# Customize marker appearance
+fig <- plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length,
+               marker = list(
+                 size = 10,                    # Marker size
+                 color = 'blue',               # Fill color
+                 line = list(                  # Border styling
+                   color = 'green',
+                   width = 2
+                 )
+               ))
+
+# Add title and layout
+fig <- fig %>% layout(title = 'Customized Scatter Plot')
+
+fig
+```
+
+### Line Charts
+
+Line charts are perfect for showing trends over time or ordered categories. They help visualize patterns, seasonality, and changes in continuous data.
+
+```{r}
+# Create sample time series data
+day <- c(1:30)
+number_of_order <- rnorm(30, mean = 3)  # Random data with mean of 3
+df <- data.frame(day, number_of_order)
+
+# Create line chart
+fig <- plot_ly(df, x = ~day, y = ~number_of_order, 
+               type = 'scatter', mode = 'lines')
+
+# Customize layout with proper axis labels
+fig %>%  
+  layout(
+    title = 'Number of Daily Orders in a Month', 
+    yaxis = list(title = 'Number of Orders'), 
+    xaxis = list(title = 'Day of Month')
+  )
+```
+
+### Multiple Line Charts
+
+Comparing multiple series on the same chart helps identify patterns and relationships between different categories or groups.
+
+```{r}
+# Prepare sample sales data by category
+month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
+         'August', 'September', 'October', 'November', 'December')
+Vegetable <- c(32.5, 37.6, 49.9, 53.0, 69.1, 75.4, 76.5, 76.6, 70.7, 60.6, 45.1, 29.3)
+Beverage <- c(13.8, 22.3, 32.5, 37.2, 49.9, 56.1, 57.7, 58.3, 51.2, 42.8, 31.6, 15.9)
+Snack <- c(36.5, 26.6, 43.6, 52.3, 71.5, 81.4, 80.5, 82.2, 76.0, 67.3, 46.1, 35.0)
+
+# Create data frame and ensure proper month ordering
+df <- data.frame(month, Vegetable, Beverage, Snack)
+df$month <- factor(df$month, levels = df[["month"]])
+
+# Create base plot with first line
+fig <- plot_ly(data = df, x = ~month, y = ~Vegetable, name = 'Vegetable', 
+               type = 'scatter', mode = 'lines',
+               line = list(color = 'blue', width = 4))
+
+# Add additional lines with different styles               
+fig <- fig %>% 
+  add_trace(y = ~Beverage, name = 'Beverage', 
+            line = list(color = 'red', width = 4, dash = 'dot')) %>%
+  add_trace(y = ~Snack, name = 'Snack', 
+            line = list(color = 'green', width = 4, dash = 'dash'))
+
+# Customize layout
+fig <- fig %>% layout(
+  title = "Average Sales by Product Category",
+  xaxis = list(title = "Month"),
+  yaxis = list(title = "Average Sales ($)")
+)
+         
+fig
+```
+
+## Bar Charts
+
+### Basic Bar Chart
+
+Bar charts are excellent for comparing categorical data. They make it easy to see which categories have the highest or lowest values.
+
+```{r}
+# Create a simple bar chart
+fig <- plot_ly(
+  x = c("Beverage", "Vegetable", "Dairy"),
+  y = c(20, 14, 23),
+  type = "bar",
+  marker = list(color = "orange")  # Use marker instead of color for styling
+)
+
+# Add informative title and axis labels
+fig <- fig %>% layout(
+  title = "Sales by Product Category",
+  xaxis = list(title = "Product Category"),
+  yaxis = list(title = "Units Sold")
+)
+
+fig
+```
+
+### Grouped Bar Chart
+
+Grouped bar charts allow you to compare multiple values across categories side-by-side. This is particularly useful for time-based comparisons or comparing different groups.
+
+```{r}
+# Prepare comparison data
+Parts <- c("Beverage", "Vegetable", "Dairy")
+Sales_2019 <- c(20, 14, 23)
+Sales_2020 <- c(12, 18, 29)
+df <- data.frame(Parts, Sales_2019, Sales_2020)
+
+# Create grouped bar chart
+fig <- plot_ly(data = df, x = ~Parts, y = ~Sales_2019, 
+               type = 'bar', name = '2019 Sales')
+
+# Add second group of bars
+fig <- fig %>% add_trace(y = ~Sales_2020, name = '2020 Sales')
+
+# Set layout for grouped bars
+fig <- fig %>% layout(
+  title = "Sales Comparison: 2019 vs 2020",
+  xaxis = list(title = "Product Category"),
+  yaxis = list(title = 'Units Sold'), 
+  barmode = 'group'  # This creates the side-by-side grouping
+)
+      
+fig
+```
+
+
+### Stacked Bar Chart
+
+Stacked bar charts show the total value while breaking down the components. They're ideal for showing both individual contributions and the overall sum.
+
+```{r}
+# Using the same data as grouped chart
+Parts <- c("Beverage", "Vegetable", "Dairy")
+Sales_2019 <- c(20, 14, 23)
+Sales_2020 <- c(12, 18, 29)
+df <- data.frame(Parts, Sales_2019, Sales_2020)
+
+# Create stacked bar chart
+fig <- plot_ly(data = df, x = ~Parts, y = ~Sales_2019, 
+               type = 'bar', name = '2019 Sales')
+
+# Add second layer for stacking
+fig <- fig %>% add_trace(y = ~Sales_2020, name = '2020 Sales')
+
+# Set layout for stacked bars
+fig <- fig %>% layout(
+  title = "Total Sales with Year Breakdown",
+  xaxis = list(title = "Product Category"),
+  yaxis = list(title = 'Total Units Sold'), 
+  barmode = 'stack'  # This stacks bars on top of each other
+)
+      
+fig
+```
+
+### Custom Bar Colors
+
+Highlighting specific bars with different colors can draw attention to important data points or categories that need emphasis.
+
+```{r}
+# Create bar chart with custom colors for each bar
+fig <- plot_ly(
+  x = c("Beverage", "Vegetable", "Dairy"),
+  y = c(20, 14, 23),
+  type = "bar",
+  marker = list(
+    color = c(
+      'rgba(204,204,204,1)',    # Gray for Beverage
+      'rgba(204,204,204,1)',    # Gray for Vegetable  
+      'rgba(222,45,38,0.8)'     # Red highlight for Dairy
+    )
+  )
+)
+
+# Add layout with descriptive title
+fig <- fig %>% layout(
+  title = "Product Sales (Dairy Highlighted)",
+  xaxis = list(title = "Product Category"),
+  yaxis = list(title = "Units Sold")
+)
+
+fig
+```
+
+### Color Mapping by Variable
+
+Automatically color-coding bars based on a categorical variable helps viewers quickly distinguish between different groups or categories.
+
+```{r}
+# Explore the diamonds dataset
+new_df <- ggplot2::diamonds
+new_df_counted <- new_df %>% count(cut, clarity)
+
+# Preview the data structure
+head(new_df_counted)
+
+# Create color-mapped bar chart
+fig <- new_df_counted %>% 
+  plot_ly(x = ~cut, y = ~n, color = ~clarity, type = "bar")
+
+# Add informative layout
+fig <- fig %>% layout(
+  title = "Diamond Count by Cut and Clarity",
+  xaxis = list(title = "Diamond Cut Quality"),
+  yaxis = list(title = "Number of Diamonds")
+)
+
+fig
+```
+
+## Pie and Donut Charts
+
+### Donut Chart
+
+Donut charts (pie charts with a hole in the center) are effective for showing proportions of a whole. They work best with 5 or fewer categories to maintain readability.
+
+```{r}
+# Prepare sales data by category
+Parts <- c('Beverage', 'Vegetable', 'Dairy', 'Fish')
+Sales <- c(4500, 2500, 1053, 500)
+df <- data.frame(Parts, Sales)
+
+# Create donut chart
+fig <- df %>% plot_ly(labels = ~Parts, values = ~Sales, type = 'pie')
+
+# Add the hole to make it a donut chart
+fig <- fig %>% add_pie(hole = 0.6)
+
+# Customize layout for clean appearance
+fig <- fig %>% layout(
+  title = "Daily Sales Distribution by Product Category",
+  showlegend = TRUE,  # Keep legend for clarity
+  # Hide axes (not needed for pie charts)
+  xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+  yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+)
+
+fig
+```
+
+## Advanced Multi-Layer Plots
+
+### Building Complex Visualizations
+
+One of Plotly's strengths is the ability to layer multiple data series and create complex, interactive visualizations. Let's explore this using the **txhousing** dataset from ggplot2, which tracks housing prices for cities in Texas over time.
+
+#### Data Exploration 
+
+```{r}
+# Examine the txhousing dataset structure
+head(txhousing)
+glimpse(txhousing)
+
+# Check available cities and date range
+length(unique(txhousing$city))
+range(txhousing$date, na.rm = TRUE)
+```
+
+Let’s start by plotting the time trend for each city.  
+Watch here how we work plotly into a regular type of tidyverse/dplyr pipeline.  
+  
+*Key point:* the object created here is a plotly chart object. This will become important later on below to keep in mind.
+
+```{r, echo=TRUE}
+
+all_cities_data <- txhousing %>%
+  group_by(city)
+
+all_cities_plotlychart <- all_cities_data %>%
+  plot_ly(x = ~date, y = ~median) %>%
+  add_lines(
+    name = "Texan Cities", 
+    line = list(width = 1.33), 
+    alpha = 0.2, 
+    hoverinfo = "none"
+  )
+
+all_cities_plotlychart
+
+```
+
+Now let's add a line with the average of each cities median price. We’ll use summarise() to average the housing values for each month. After the data is summarized, we’ll add a new layer based on the updated data.
+
+```{r, echo=TRUE}
+
+summarized_data <- txhousing %>%
+  group_by(date) %>%
+  summarise(median = mean(median, na.rm = TRUE)) %>%
+  ungroup()
+
+summarized_data %>%
+  slice_head(n = 6)
+
+```
+
+Make the chart to add a highlighted line for median price.
+```{r, echo=TRUE}
+
+all_cities_plotlychart %>%
+  add_lines(
+    data = summarized_data,
+    x = ~date,
+    y = ~median,
+    name = "Average Median Price"
+  )
+
+
+```
+
+The mutability of the plotly object allowed us to use all of the data in the first layer, and then add a second layer on a summarized version of the data.  
+  
+Let’s say that we also wanted to add lines for the major Texan cities to see where their housing prices fell compared to all cities. Let’s look at San Antonio and Austin. 
+  
+First we'll do San Antonio.
+```{r, echo=TRUE}
+
+san_antonio_data <- all_cities_data %>%
+  filter(city == "San Antonio")
+
+san_antonio_data
+
+```
+
+
+```{r, echo=TRUE}
+
+all_cities_plotlychart %>%
+  add_lines(
+    data = san_antonio_data,
+    x = ~date,
+    y = ~median,
+    name = "San Antonio"
+  )
+
+
+```
+
+
+```{r, echo=TRUE}
+
+dallas_data <- all_cities_data %>%
+  filter(city == "Dallas")
+
+all_cities_plotlychart %>%
+  add_lines(
+    data = dallas_data,
+    x = ~date,
+    y = ~median,
+    name = "Dallas"
+  )
+
+
+```
+
+What if we want multiple cities to be highlighted? We can create a function to do it.
+```{r, echo=TRUE}
+
+city_layer <- function(plot_obj, city_name) {
+  plot_obj %>%
+    add_lines(
+      data = filter(all_cities_data, city == city_name),
+      x = ~date,
+      y = ~median,
+      name = city_name
+    )
+}
+
+all_cities_plotlychart %>%
+  add_fun(city_layer, city_name = "San Antonio") %>%
+  add_fun(city_layer, city_name = "Austin") %>%
+  add_fun(city_layer, city_name = "Houston")
+```
+
+## Interactivity Features
+
+### Hover Information and Tooltips
+
+Plotly's interactive features make data exploration intuitive. You can customize hover information to show exactly what users need to know.
+
+```{r}
+# Create enhanced scatter plot with custom hover information
+fig <- plot_ly(data = iris, 
+               x = ~Sepal.Length, 
+               y = ~Petal.Length,
+               color = ~Species,
+               # Custom hover template
+               hovertemplate = paste(
+                 "<b>%{fullData.name}</b><br>",
+                 "Sepal Length: %{x:.1f}cm<br>",
+                 "Petal Length: %{y:.1f}cm<br>",
+                 "<extra></extra>"  # Removes trace box
+               ))
+
+fig %>% layout(
+  title = "Iris Dataset with Enhanced Hover Information",
+  xaxis = list(title = "Sepal Length (cm)"),
+  yaxis = list(title = "Petal Length (cm)")
+)
+```
+
+### Click Events and Selection
+
+Enable users to interact with your plots through clicking and selection.
+
+```{r}
+# Create interactive bar chart with click events
+sales_data <- data.frame(
+  Category = c("Electronics", "Clothing", "Books", "Home", "Sports"),
+  Revenue = c(150000, 120000, 80000, 95000, 110000)
+)
+
+fig <- plot_ly(data = sales_data,
+               x = ~Category,
+               y = ~Revenue,
+               type = "bar",
+               marker = list(color = "#1f77b4"))
+
+fig %>% layout(
+  title = "Click on bars to see details",
+  xaxis = list(title = "Product Category"),
+  yaxis = list(title = "Revenue ($)")
+)
+```
+
+## Accessibility and Best Practices
+
+### Color-Blind Friendly Palettes
+
+Always consider users with color vision deficiencies when choosing color schemes.
+
+```{r}
+# Using a color-blind friendly palette
+colorblind_friendly <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2")
+
+fig <- plot_ly(data = iris,
+               x = ~Sepal.Length,
+               y = ~Petal.Length,
+               color = ~Species,
+               colors = colorblind_friendly,
+               marker = list(size = 8))
+
+fig %>% layout(
+  title = "Color-Blind Friendly Visualization",
+  xaxis = list(title = "Sepal Length (cm)"),
+  yaxis = list(title = "Petal Length (cm)")
+)
+```
+
+### Performance Optimization
+
+For large datasets, consider these optimization strategies:
+
+```{r}
+# Example with sampling for large datasets
+set.seed(123)
+large_dataset <- data.frame(
+  x = rnorm(10000),
+  y = rnorm(10000),
+  category = sample(letters[1:5], 10000, replace = TRUE)
+)
+
+# Sample data for better performance
+sampled_data <- large_dataset %>%
+  slice_sample(n = 1000)
+
+fig <- plot_ly(data = sampled_data,
+               x = ~x,
+               y = ~y,
+               color = ~category,
+               alpha = 0.6)
+
+fig %>% layout(
+  title = "Optimized Plot with Sampled Data (1,000 of 10,000 points)",
+  showlegend = TRUE
+)
+```
+
+## Exercises and Practice
+
+### Exercise 1: Custom Scatter Plot
+Create a scatter plot using the `mtcars` dataset that:
+- Shows the relationship between horsepower (`hp`) and miles per gallon (`mpg`)
+- Colors points by number of cylinders (`cyl`)
+- Includes custom hover information showing car names
+- Has a descriptive title and axis labels
+
+```{r}
+# Your solution here
+# Hint: Use rownames(mtcars) to get car names for hover info
+
+```
+
+### Exercise 2: Multi-Series Line Chart
+Using the built-in `AirPassengers` time series data:
+- Convert it to a data frame with months and passenger counts
+- Create a line chart showing the trend over time
+- Add a trend line using linear regression
+- Style the chart with appropriate colors and labels
+
+```{r}
+# Your solution here
+# Hint: Use as.data.frame() and create date column
+
+```
+
+### Exercise 3: Interactive Dashboard Element
+Create a grouped bar chart that could be part of a dashboard:
+- Use any dataset of your choice (or create sample data)
+- Include at least 3 categories and 2 comparison groups
+- Apply consistent color scheme
+- Add appropriate hover information
+- Include clear titles and labels
+
+```{r}
+# Your solution here
+
+```
+
+## Data Validation and Error Handling
+
+### Handling Missing Data
+
+Real-world datasets often contain missing values. Here's how to handle them gracefully in Plotly visualizations.
+
+```{r}
+# Create sample data with missing values
+sample_data <- data.frame(
+  month = c("Jan", "Feb", "Mar", "Apr", "May", "Jun"),
+  sales = c(100, NA, 150, 120, NA, 180),
+  target = c(110, 120, 140, 130, 160, 170)
+)
+
+# Method 1: Remove missing values
+clean_data <- sample_data %>% 
+  filter(!is.na(sales))
+
+fig1 <- plot_ly(clean_data, x = ~month, y = ~sales, 
+                type = 'scatter', mode = 'lines+markers',
+                name = 'Actual Sales') %>%
+  add_trace(data = sample_data, y = ~target, name = 'Target',
+            line = list(dash = 'dash')) %>%
+  layout(title = "Sales Data (Missing Values Removed)")
+
+fig1
+```
+
+```{r}
+# Method 2: Interpolate missing values
+sample_data$sales_interpolated <- na.approx(sample_data$sales, na.rm = FALSE)
+
+fig2 <- plot_ly(sample_data, x = ~month, y = ~sales_interpolated,
+                type = 'scatter', mode = 'lines+markers',
+                name = 'Interpolated Sales') %>%
+  add_trace(y = ~target, name = 'Target',
+            line = list(dash = 'dash')) %>%
+  layout(title = "Sales Data (Missing Values Interpolated)")
+
+fig2
+```
+
+### Input Validation
+
+Always validate your data before creating visualizations:
+
+```{r}
+# Function to validate data before plotting
+validate_plot_data <- function(data, x_col, y_col) {
+  # Check if columns exist
+  if (!x_col %in% names(data)) {
+    stop(paste("Column", x_col, "not found in data"))
+  }
+  if (!y_col %in% names(data)) {
+    stop(paste("Column", y_col, "not found in data"))
+  }
+  
+  # Check for sufficient data points
+  if (nrow(data) < 2) {
+    warning("Data contains fewer than 2 rows")
+  }
+  
+  # Check for all missing values
+  if (all(is.na(data[[y_col]]))) {
+    stop(paste("All values in", y_col, "are missing"))
+  }
+  
+  return(TRUE)
+}
+
+# Example usage
+tryCatch({
+  validate_plot_data(iris, "Sepal.Length", "Petal.Length")
+  print("Data validation passed!")
+}, error = function(e) {
+  print(paste("Validation error:", e$message))
+})
+```
+
+## Mobile-Responsive and Accessible Design
+
+### Mobile-Friendly Configuration
+
+Ensure your plots work well on mobile devices:
+
+```{r}
+# Create a mobile-friendly plot configuration
+mobile_config <- list(
+  displayModeBar = FALSE,  # Hide toolbar on mobile
+  responsive = TRUE,       # Make plot responsive
+  scrollZoom = FALSE      # Disable scroll zoom to prevent page scroll issues
+)
+
+fig <- plot_ly(data = iris,
+               x = ~Sepal.Length,
+               y = ~Petal.Length,
+               color = ~Species,
+               type = 'scatter',
+               mode = 'markers') %>%
+  layout(
+    title = list(
+      text = "Mobile-Friendly Iris Plot",
+      font = list(size = 16)  # Readable font size on mobile
+    ),
+    margin = list(t = 60, r = 20, b = 40, l = 60),  # Optimized margins
+    legend = list(
+      orientation = "h",  # Horizontal legend for mobile
+      x = 0, y = -0.1
+    )
+  ) %>%
+  config(mobile_config)
+
+fig
+```
+
+### Enhanced Accessibility Features
+
+```{r}
+# Comprehensive accessible color palette
+accessible_palette <- c(
+  "#1f77b4",  # Blue
+  "#ff7f0e",  # Orange  
+  "#2ca02c",  # Green
+  "#d62728",  # Red
+  "#9467bd",  # Purple
+  "#8c564b",  # Brown
+  "#e377c2",  # Pink
+  "#7f7f7f",  # Gray
+  "#bcbd22",  # Olive
+  "#17becf"   # Cyan
+)
+
+# Create accessible visualization with patterns and colors
+fig <- plot_ly(data = iris,
+               x = ~Sepal.Length,
+               y = ~Petal.Length,
+               color = ~Species,
+               colors = accessible_palette,
+               symbol = ~Species,  # Different symbols for each species
+               symbols = c('circle', 'square', 'diamond'),
+               marker = list(size = 10, line = list(width = 1, color = 'black'))) %>%
+  layout(
+    title = "Accessible Iris Visualization (Color + Shape + Border)",
+    xaxis = list(
+      title = "Sepal Length (cm)",
+      titlefont = list(size = 14)
+    ),
+    yaxis = list(
+      title = "Petal Length (cm)", 
+      titlefont = list(size = 14)
+    ),
+    font = list(size = 12)  # Larger base font size
+  )
+
+fig
+```
+
+## Export and Integration
+
+### Saving Plots for Publication
+
+```{r}
+# Create a publication-ready plot
+pub_fig <- plot_ly(data = iris,
+                   x = ~Sepal.Length,
+                   y = ~Petal.Length, 
+                   color = ~Species,
+                   colors = accessible_palette) %>%
+  layout(
+    title = "Relationship Between Sepal and Petal Length in Iris Species",
+    xaxis = list(title = "Sepal Length (cm)"),
+    yaxis = list(title = "Petal Length (cm)"),
+    font = list(family = "Arial", size = 12),
+    paper_bgcolor = 'white',
+    plot_bgcolor = 'white'
+  )
+
+# Note: In practice, you would save this using:
+# htmlwidgets::saveWidget(pub_fig, "iris_plot.html", selfcontained = TRUE)
+# Or for static images: 
+# orca(pub_fig, "iris_plot.png", width = 800, height = 600)
+
+pub_fig
+```
+
+### Embedding in Web Pages
+
+```{r}
+# Create a plot optimized for web embedding
+web_fig <- plot_ly(data = mtcars,
+                   x = ~wt,
+                   y = ~mpg,
+                   text = ~paste("Car:", rownames(mtcars)),
+                   hovertemplate = "%{text}<br>Weight: %{x:.1f}<br>MPG: %{y}<extra></extra>") %>%
+  layout(
+    title = "Fuel Efficiency vs Weight",
+    xaxis = list(title = "Weight (1000 lbs)"),
+    yaxis = list(title = "Miles Per Gallon"),
+    hovermode = 'closest',
+    # Optimize for web embedding
+    margin = list(t = 50, r = 50, b = 50, l = 50)
+  ) %>%
+  config(
+    displaylogo = FALSE,  # Remove Plotly logo
+    modeBarButtonsToRemove = c('pan2d', 'lasso2d', 'select2d')  # Simplify toolbar
+  )
+
+web_fig
+```
+
+## Real-World Journalism Examples
+
+### Election Results Visualization
+
+```{r}
+# Simulate election data
+election_data <- data.frame(
+  candidate = c("Candidate A", "Candidate B", "Candidate C", "Other"),
+  votes = c(45.2, 42.1, 8.3, 4.4),
+  party = c("Democrat", "Republican", "Independent", "Other")
+)
+
+# Create news-style election chart
+election_fig <- plot_ly(election_data,
+                        x = ~reorder(candidate, votes),
+                        y = ~votes,
+                        type = "bar",
+                        marker = list(
+                          color = c("#1f77b4", "#d62728", "#ff7f0e", "#7f7f7f"),
+                          line = list(color = "black", width = 1)
+                        ),
+                        hovertemplate = "%{x}<br>%{y:.1f}% of votes<extra></extra>") %>%
+  layout(
+    title = "2024 Election Results",
+    xaxis = list(title = "", tickangle = 45),
+    yaxis = list(title = "Percentage of Votes (%)", range = c(0, 50)),
+    showlegend = FALSE,
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+election_fig
+```
+
+### Budget Tracking Dashboard
+
+```{r}
+# Create budget data
+budget_data <- data.frame(
+  department = c("Education", "Healthcare", "Transportation", "Public Safety", "Parks & Rec"),
+  allocated = c(2.5, 1.8, 1.2, 0.9, 0.4),
+  spent = c(2.3, 1.9, 1.0, 0.8, 0.3)
+) %>%
+  pivot_longer(cols = c(allocated, spent), names_to = "type", values_to = "amount")
+
+# Create grouped bar chart for budget comparison
+budget_fig <- plot_ly(budget_data,
+                      x = ~department,
+                      y = ~amount,
+                      color = ~type,
+                      type = "bar",
+                      colors = c("#2ca02c", "#d62728")) %>%
+  layout(
+    title = "City Budget: Allocated vs Spent (in Billions)",
+    xaxis = list(title = "", tickangle = 45),
+    yaxis = list(title = "Amount ($ Billions)"),
+    barmode = "group",
+    legend = list(title = list(text = "Budget Type"))
+  )
+
+budget_fig
+```
+
+## Performance Optimization for Large Datasets
+
+### Handling Big Data
+
+```{r}
+# Simulate large dataset
+set.seed(123)
+large_data <- data.frame(
+  x = rnorm(50000),
+  y = rnorm(50000),
+  category = sample(LETTERS[1:10], 50000, replace = TRUE)
+)
+
+# Strategy 1: Sampling
+sampled_data <- large_data %>%
+  slice_sample(n = 2000)
+
+fig1 <- plot_ly(sampled_data, x = ~x, y = ~y, color = ~category,
+                type = 'scattergl',  # Use WebGL for better performance
+                alpha = 0.6) %>%
+  layout(title = "Large Dataset (Sampled to 2,000 points)")
+
+# Strategy 2: Aggregation
+aggregated_data <- large_data %>%
+  group_by(category) %>%
+  summarise(
+    mean_x = mean(x),
+    mean_y = mean(y),
+    count = n(),
+    .groups = 'drop'
+  )
+
+fig2 <- plot_ly(aggregated_data, x = ~mean_x, y = ~mean_y,
+                size = ~count, color = ~category,
+                text = ~paste("Category:", category, "<br>Count:", count),
+                hovertemplate = "%{text}<extra></extra>") %>%
+  layout(title = "Large Dataset (Aggregated by Category)")
+
+print(paste("Original data:", nrow(large_data), "points"))
+print(paste("Sampled data:", nrow(sampled_data), "points"))
+print(paste("Aggregated data:", nrow(aggregated_data), "points"))
+
+fig1
+```
+
+```{r}
+fig2
+```
+
+## Key Takeaways and Best Practices
+
+### When to Use Each Chart Type
+
+- **Scatter plots**: Relationships between continuous variables, correlation analysis
+- **Line charts**: Time series data, trends over ordered categories
+- **Bar charts**: Comparing categorical data, showing differences between groups
+- **Pie/Donut charts**: Parts of a whole (use sparingly, max 5-7 categories)
+- **Multi-layer plots**: Complex relationships, combining multiple data sources
+
+### Design Principles
+
+1. **Clarity over complexity**: Simple, clear visualizations are more effective
+2. **Consistent styling**: Use consistent colors, fonts, and spacing
+3. **Accessibility**: Consider color-blind users and screen readers
+4. **Interactive purpose**: Add interactivity that enhances understanding
+5. **Performance**: Optimize for your data size and user experience
+
+### Common Pitfalls to Avoid
+
+- Overusing 3D effects or excessive styling
+- Too many colors or categories in a single chart
+- Misleading scales or truncated axes
+- Ignoring the target audience and their needs
+- Not testing visualizations with actual users
+
+## Additional Resources
+
+- [Plotly R Documentation](https://plotly.com/r/)
+- [R Graph Gallery - Plotly Section](https://r-graph-gallery.com/plotly.html)
+- [Color Brewer for Accessible Palettes](https://colorbrewer2.org/)
+- [Fundamentals of Data Visualization by Claus Wilke](https://clauswilke.com/dataviz/)

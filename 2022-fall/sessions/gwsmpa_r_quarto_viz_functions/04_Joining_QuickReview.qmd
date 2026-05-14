@@ -1,0 +1,122 @@
+---
+title: "Joining Review"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+## Load data
+
+```{r}
+
+superheroes <- tibble::tribble(
+       ~name, ~alignment,  ~gender,          ~publisher,
+   "Magneto",      "bad",   "male",            "Marvel",
+     "Storm",     "good", "female",            "Marvel",
+  "Mystique",      "bad", "female",            "Marvel",
+    "Batman",     "good",   "male",                "DC",
+     "Joker",      "bad",   "male",                "DC",
+  "Catwoman",      "bad", "female",                "DC",
+   "Hellboy",     "good",   "male", "Dark Horse Comics"
+  )
+
+publishers <- tibble::tribble(
+  ~publisher, ~yr_founded,
+        "DC",       1934L,
+    "Marvel",       1939L,
+     "Image",       1992L
+  )
+
+```
+
+```{r}
+
+superheroes
+
+publishers
+
+```
+
+## "Inner" Join
+
+The most common type we'll use early on. Looks for only when things match up in both tables.
+
+![](images/innerjoin.png)
+
+Let's do it... we'll use dplyr's `inner_join()` function.
+
+```{r}
+
+inner_join(superheroes, publishers)
+
+
+```
+
+Wait, how did it even know what to join?
+
+By default it looks for column names in columns. This can be good, but also can give you problems if you're not careful.
+
+How do we tell R to specifically match on a column?
+
+```{r}
+
+inner_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Left Join
+
+This is for when you want *everything* from the first table no matter what, but joining up those that match from the second.
+
+![](images/leftjoin.png)
+
+Let's give it a try...
+
+```{r}
+
+left_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Full Join
+
+This is for when you want *everything* from *both* tables no matter what....matching where they match, and leaving blank where they don't.
+
+![](images/fulljoin.png)
+
+Let's give it a go...
+
+```{r}
+
+full_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+## Anti-Join
+
+Finally, there's the "anti" join, which sounds like what it is -- looking for records in one table that are *not* in the other based on the matching variable.
+
+![](images/antijoin.png)
+
+Let's try it...
+
+```{r}
+
+anti_join(superheroes, publishers, by = "publisher")
+
+
+```
+
+We'll do more with joins in the weeks to come.

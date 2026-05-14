@@ -1,0 +1,55 @@
+---
+title: "Joining Exercises"
+author: "Your Name Here"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+---
+
+# Load the datasets
+
+```{r}
+
+counties_demographics <- readRDS("counties_demographics.rds")
+counties_elexresults <- readRDS("counties_elexresults.rds")
+counties_rural_urban_suburban <- readRDS("counties_rural_urban_suburban.rds")
+
+```
+
+# Exercises
+
+Join together the election results and urban/suburban/rural tables above, and then use the merged table to:
+
+-   filter for just Virginia
+
+-   group/summarize to calculate the mean pct of Trump 2020 vote by urban/rural categories
+
+```{r}
+
+
+
+
+```
+
+Take the grouped dataset, and create a column chart using ggplot to display it
+
+```{r}
+
+
+
+
+```
+
+Now using the joined dataset, come up with two groupings you find interesting or newsworthy in a particular state, and replicate the steps above them them instead.
+
+(i.e. instead of for urban/rural, perhaps you want to look at pct of white college grads in Michigan, etc. If you're having trouble, you can stick with Virginia as your state.)
+
+```{r}
+
+
+
+
+```

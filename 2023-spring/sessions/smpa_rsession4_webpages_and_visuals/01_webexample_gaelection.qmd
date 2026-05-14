@@ -1,0 +1,173 @@
+---
+title: "GA Voter Turnout By Race"
+author: "Aaron Kessler"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(here)
+library(DT)
+library(janitor)
+library(scales)
+library(viridis)
+library(ggthemes)
+library(htmlwidgets)
+library(htmltools)
+options(scipen = 999)
+
+
+#load data from 2020 GA general election
+votedemos_2020_gen <- readRDS(here("data", "GA_votedemos_2020_gen.rds"))
+
+
+
+```
+
+## Combine gender categories into total by race
+
+```{r}
+#create all_gender columns for black and white to combine gender-based ones provided in source
+votedemos_2020_gen <- votedemos_2020_gen %>% 
+  mutate(
+    black_ALL_registered = black_male_registered + black_female_registered + black_unknown_registered,
+    black_ALL_voted = black_male_voted + black_female_voted + black_unknown_voted,
+    black_ALL_pct = round_half_up(black_ALL_voted / black_ALL_registered * 100, 2),
+    white_ALL_registered = white_male_registered + white_female_registered + white_unknown_registered,
+    white_ALL_voted = white_male_voted + white_female_voted + white_unknown_voted,
+    white_ALL_pct = round_half_up(white_ALL_voted / white_ALL_registered * 100, 2)
+  )
+
+votedemos_2020_gen
+
+```
+Let's use select() to simplify our table
+
+```{r}
+
+votedemos_2020_gen <- votedemos_2020_gen %>% 
+  select(
+    elexyear, 
+    elextype,
+    county, 
+    county_code,
+    black_ALL_pct,
+    black_male_pct,
+    black_female_pct,
+    white_ALL_pct,
+    white_male_pct,
+    white_female_pct
+    )
+
+votedemos_2020_gen
+
+```
+
+
+
+## Charts
+
+Let's make some charts
+
+```{r}
+votedemos_2020_gen %>% 
+  head(15) %>% 
+  ggplot(aes(x = reorder(county, black_ALL_pct), y = black_ALL_pct)) + 
+  geom_col(color = "black", fill = "blue") +
+  coord_flip() + 
+  scale_y_continuous(name = "Pct of Black Registered Voters Who Voted") +
+  scale_x_discrete(name = "County") +
+  theme_hc() +
+  labs(title = "Voter Turnout in GA", 
+       subtitle = "2020 General Election",
+       caption = "Source: GA Sec State") +
+  theme(axis.text.y = element_text(angle = 45))
+
+
+```
+
+Fix the axis labels?
+
+
+```{r}
+votedemos_2020_gen %>% 
+  head(15) %>% 
+  ggplot(aes(x = reorder(county, white_ALL_pct), y = white_ALL_pct)) + 
+  geom_col(color = "black", fill = "blue") +
+  coord_flip() + 
+  scale_y_continuous(name = "Pct of White Registered Voters Who Voted") +
+  scale_x_discrete(name = "County") +
+  theme_hc() +
+  labs(title = "Voter Turnout in GA", 
+       subtitle = "2020 General Election",
+       caption = "Source: GA Sec State") +
+  theme(axis.text.y = element_text(angle = 45)) 
+```
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+```
+

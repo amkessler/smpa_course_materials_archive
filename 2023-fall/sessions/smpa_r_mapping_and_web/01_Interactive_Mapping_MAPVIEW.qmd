@@ -1,0 +1,232 @@
+---
+title: "Interactive Maps"
+author: "Aaron Kessler"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tigris)
+library(sf)
+library(tidycensus)
+library(htmltools)
+library(janitor)
+library(here)
+library(mapview)
+library(leafsync)
+library(leaflet.extras2)
+options(tigris_class = "sf")
+
+
+```
+
+# Interactive Maps with MapView Package
+
+A h/t to Sharon Machlis for turning people on to the Mapview package, and her excellent walkthroughs of it.
+
+For the data tonight we'll be using the tidycensus package to pull both census data, as well as geospatial boundaries. 
+Let's quickly review how we use it.
+
+```{r}
+
+census_api_key("2a6f8c21a30d3024e038d67d7d4eba647dc79cd4", overwrite=TRUE)
+
+
+```
+
+```{r}
+#chose variables we want
+myvars <- c(totalpop = "B01003_001",
+            medincome = "B19013_001",
+            medage = "B01002_001"
+)
+```
+
+
+```{r}
+#pull for VA counties
+va_counties_withgeo <- get_acs(geography = "county",
+                       variables = c(myvars),
+                       state = "VA",
+                       output = "wide",
+                       geometry = TRUE)
+
+va_counties_withgeo
+```
+
+```{r}
+#all counties in the US
+all_counties_withgeo <- get_acs(geography = "county",
+                       variables = c(myvars),
+                       output = "wide",
+                       geometry = TRUE)
+
+all_counties_withgeo
+```
+
+```{r}
+#remove MOE columns - they all end with "M"
+va_counties_withgeo <- va_counties_withgeo %>%
+  select(-ends_with("M"))
+
+va_counties_withgeo
+```
+
+```{r}
+#remove that trailing "E"
+colnames(va_counties_withgeo) <- sub("E$", "", colnames(va_counties_withgeo)) # $ means end of string only
+
+va_counties_withgeo
+```
+
+Mapping Virginia counties with mapview
+
+```{r}
+
+mapview(va_counties_withgeo, zcol = "medincome")
+
+
+
+```
+
+
+Customize colors
+```{r}
+
+mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1)
+
+
+
+```
+This map’s dark background appeared automatically, because mapview determined the map included a lot of light colors. You can turn off that feature.
+
+```{r}
+
+mapviewOptions("basemaps.color.shuffle" = FALSE)
+
+
+```
+
+
+```{r}
+
+mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1)
+
+
+
+```
+
+Two maps together
+```{r}
+
+map_income <- mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1)
+
+map_age <- mapview(va_counties_withgeo, zcol = "medage", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1)
+
+
+```
+
+
+```{r}
+
+sync(map_income, map_age)
+
+
+```
+
+Side-by-side slider to compare the two, from the leaflet.extras2 package 
+```{r}
+
+map_income | map_age
+
+
+```
+To turn off legends, hover text, popups
+
+
+```{r}
+
+mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1,
+         legend = FALSE, 
+         label = FALSE, 
+         popup = FALSE)
+
+
+```
+
+Customize labels
+```{r}
+
+mylabel <- glue::glue("{va_counties_withgeo$NAM} {va_counties_withgeo$medincome}")
+
+
+mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1,
+         label = mylabel)
+
+```
+
+Customize popups
+```{r}
+mypopup <- glue::glue("<strong>{va_counties_withgeo$NAM}</strong><br />
+                      Total Population: {va_counties_withgeo$totalpop}<br />
+                      Median Income: {va_counties_withgeo$medincome}") %>% 
+  lapply(htmltools::HTML)
+
+# mylabel <- glue::glue("{all_data$State} {all_data$PctChange10_20}%") %>%
+#   lapply(htmltools::HTML)
+
+```
+
+
+```{r}
+
+head(mypopup)
+
+```
+
+
+```{r}
+
+mapview(va_counties_withgeo, zcol = "medincome", 
+         col.regions = RColorBrewer::brewer.pal(9, "Greens"), 
+         alpha.regions = 1,
+         popup = mypopup)
+
+```
+
+
+```{r}
+
+
+
+```
+
+
+```{r}
+
+
+
+```
+
+
+
+

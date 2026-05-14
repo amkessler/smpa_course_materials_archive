@@ -1,0 +1,93 @@
+---
+title: "R In-Class Exercise - Functions"
+author: "Your Name Here"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#first load the libraries we'll need
+library(tidyverse)
+library(nycflights13) # <- make sure to install this package 
+library(tidycensus)
+library(janitor)
+library(writexl)
+library(here)
+options(tigris_class = "sf")
+
+```
+
+# Functions
+
+1) Create a function that will return the sum of 2 numbers.
+
+```{r}
+
+
+
+
+
+```
+
+2) Create a function that will return the mean of a list of numbers fed to it. (Remember that in our case we're using the word "list" for easier understanding, but we're talking about a "vector" of numbers in R-speak.)
+
+```{r}
+
+
+
+
+
+
+```
+
+3) Now, expand on the function you made above, and instead of just returning the mean number alone, have it return the sentence:
+*"The mean is ___"*. (Where the blank is the mean.)
+
+```{r}
+
+
+
+
+
+```
+
+For these next two questions, we'll use the `flights` dataset from the package `nycflights13`. It contains records of individual airline flights departing at New York's three metro airports, JFK, LaGuardia (LGA) and Newark (EWR). Run the following chunk to load the data. (Make sure you've actually installed the package, of course.)
+
+```{r}
+#load the data to use for the rest of the assignment questions
+flights <- nycflights13::flights
+
+head(flights)
+```
+
+4) Using the `flights` dataset, create a function that filters the data frame to only include records from a single originating airport (column name `origin`). In other words, it should let you enter an origin airport and return all the records from just that airport.
+
+```{r}
+
+
+
+
+
+
+
+```
+
+5) Similarly, using the `flights` dataset, create a function that:
+
+-   filters the data frame to only include records from a single originating airport (column name `origin`), and then
+
+-   aggregates (i.e. counts) the results by airline (`carrier`) to show how many flights each airline has from that airport.
+
+```{r}
+
+
+
+
+
+
+```
+

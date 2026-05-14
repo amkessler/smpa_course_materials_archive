@@ -1,0 +1,151 @@
+---
+title: "In Class Exercises - Sorting and Filtering"
+author: "Your Name Here"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+---
+
+## Setup and Loading Data
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we'll need
+# Remember, think of this like packing for our trip
+# (We don't take the whole closet, only what we need)
+library(tidyverse)
+library(lubridate)
+
+```
+
+Run this line below load the data for this assignment. It will load a dataframe called "impeach," containing U.S. House Democrats and whether they supported the first impeachment of Pres. Trump, along with when they announced such support.
+
+```{r}
+
+impeach <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRh8d5JaDqBtByzNw2JZF3idaACobDhhk-p7chJoktA0HawELHFOvjQOqCpzGA4MGONvPlR7GASqW-K/pub?gid=1765341510&single=true&output=csv")
+
+
+```
+
+Let's see what we have:
+
+```{r}
+
+impeach
+
+
+```
+
+## Exercise Questions
+
+*For the questions below, write your R code to return the requested records in the code chunk provided.*
+
+1) The column "for_impeachment" indicates whether the member has publicly called for an impeachment inquiry. Filter to return only the ones where the answer is NO.
+
+```{r}
+
+
+
+
+
+
+```
+
+2) Filter to return only results where a member is both against impeachment, and comes from a district that President Trump won in 2016 (which is noted in the "p16winningparty" column).
+
+```{r}
+
+
+
+
+
+```
+
+3) Filter for only results where a member is against impeachment, comes from a district that President Trump won in 2016 (which is noted in the "p16winningparty" column), and also comes from a district that Mitt Romney won in 2012 ("p12winningparty").
+
+```{r}
+
+
+
+
+
+```
+
+4) Filter for only results from September 2019 where a member is a YES for impeachment.
+
+```{r}
+
+
+
+
+
+```
+
+5) Filter for only results where a member is a YES for impeachment and is from a district where Clinton won more than 70 percent of the vote in 2016 (found in column "clinton_percent").
+
+```{r}
+
+
+
+
+
+```
+
+6) Sort the entire dataframe based on the percentage of a district that has a
+bachelor's degree or higher ("pct_bachelors"), from lowest to highest.
+
+```{r}
+
+
+
+
+
+
+```
+
+7) Sort the just those who are NO on impeachment based on the percentage of a district that has a bachelor's degree or higher ("pct_bachelors"), from lowest to highest.
+
+```{r}
+
+
+
+
+
+```
+
+8) Sort the just those who are NO on impeachment based on the percentage of a district that has a bachelor's degree or higher ("pct_bachelors"), from lowest to highest.
+
+Then filter those records by only those whose bachelor's percentage is below the national average (found in the "pct_bachelors_compared_to_national" column).
+
+```{r}
+
+
+
+
+
+
+```
+
+9) Filter for only members from New Jersey who are NO on impeachment.
+
+```{r}
+
+
+
+
+
+```
+
+10) Filter for those who were YES on impeachment, with a declared date prior to 2019. So only those with dates before 2019. Then sort those so that the highest Clinton vote percentages are at the top.
+
+```{r}
+
+
+
+
+
+```

@@ -1,0 +1,88 @@
+---
+title: "Intro to Functions"
+author: "Aaron Kessler"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+what is a function??
+
+All functions have the same structure:
+
+`myfunctionname <- function(argument1, argument2, … ){`
+
+`**allmycode goes here! with argument names in place of values!**`
+
+`return(object)`
+
+`}`
+
+```{r}
+# let's see a basic example of this:
+
+cube_me <- function(mynumber){
+  
+  result <- mynumber ^ 3
+    
+    return(result)
+}
+```
+
+```{r}
+
+cube_me(5)
+
+```
+
+```{r}
+# let's try another
+
+otherteam_function <- function(teamname){
+  
+  result <- paste0("The ", teamname, " stink!")
+  
+  return(result)
+}
+```
+
+```{r}
+otherteam_function("Cowboys")
+```
+
+```{r}
+# now we'll try with TWO arguments instead of one
+twoteam_function <- function(myteam, otherteam){
+  
+  result <- paste0("The ", myteam, " are going to wipe the floor with the ", otherteam)
+  
+  return(result)
+}
+```
+
+```{r}
+
+twoteam_function("Eagles", "Cowboys")
+
+
+```
+
+```{r}
+
+#Now can we automate feeding of list of teams - in this case vectors
+myteams_vector <- c("Eagles", "Phillies", "Flyers")
+
+otherteams_vector <- c("Cowboys", "Astros", "Stars")
+
+twoteam_function(myteams_vector, otherteams_vector)
+
+
+```

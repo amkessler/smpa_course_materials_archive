@@ -1,0 +1,41 @@
+---
+title: "Virginia Election Project"
+author: "putyournamehere"
+execute:
+  echo: true
+format:
+  html:
+    self-contained: true
+    code-tools: true
+---
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+
+
+library(tidyverse)
+library(janitor)
+library(kableExtra)
+library(here)
+options(scipen = 999)
+options(stringsAsFactors = FALSE)
+
+
+#load saved joined data file from previous script
+joined_vacomparison <- readRDS(here("processed_data", "joined_vacomparison.rds"))
+
+
+
+```
+
+
+# Comparing Virgnia Gov vs. Prez
+
+
+
+```{r}
+
+head(joined_vacomparison)
+
+
+```

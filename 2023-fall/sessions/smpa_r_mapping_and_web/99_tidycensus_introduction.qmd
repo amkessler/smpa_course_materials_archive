@@ -1,0 +1,332 @@
+---
+title: "Intro to the Census API and Tidycensus"
+author: "Aaron Kessler"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tigris)
+library(tidycensus)
+library(janitor)
+library(writexl)
+library(jsonlite)
+options(tigris_class = "sf")
+
+
+```
+
+# The Census API
+
+How you would deal with the Census API directly:
+
+https://www.census.gov/data/developers/guidance/api-user-guide.Example_API_Queries.html#list-tab-2080675447
+
+https://api.census.gov/data/2020/acs/acs5/subject/examples.html
+
+How you call the api:
+
+`https://api.census.gov/data/2020/acs/acs5?get=NAME,B19013_001E&for=state:*&key=YOURKEYGOESHERE`
+
+Where do I find census table codes?
+
+A good place to start: https://censusreporter.org/tables/B01002/
+
+Good place to find details of codes within the table: https://www.socialexplorer.com/data/ACS2015_5yr/metadata/?ds=ACS15_5yr&table=B01002
+
+Census itself: https://api.census.gov/data/2019/acs/acs5/variables.html
+
+All Census API documentation: https://api.census.gov/data.html
+
+## Giving it a try for real
+
+Let's do it for real, with a real API call. We'll ask for median income by state:
+
+*https://api.census.gov/data/2020/acs/acs5?get=NAME,B19013_001E&for=state:\*&key=2a6f8c21a30d3024e038d67d7d4eba647dc79cd4*
+
+We can copy and paste this directly into a web browser and see if it works. Does it work?
+
+Now let's ask for median income county, for Virginia:
+
+*https://api.census.gov/data/2020/acs/acs5/subject?get=NAME,S0101_C01_001E&for=county:\*&in=state:51&key=2a6f8c21a30d3024e038d67d7d4eba647dc79cd4*
+
+We can try to convert this output into a table using the jsonlite package directly in R:
+
+```{r}
+
+mytable <- fromJSON("https://api.census.gov/data/2020/acs/acs5/subject?get=NAME,S0101_C01_001E&for=county:*&in=state:51&key=2a6f8c21a30d3024e038d67d7d4eba647dc79cd4")
+
+mytable %>% 
+  head(25)
+
+
+```
+
+There are still some issues here with the header names we'd have to clean up. But we'd get there. Even so, it can get pretty cumbersome having to work with URL combinations every time we want to grab something, and can be confusing when you're new to working with raw API calls overall.
+
+# Tidycensus to the rescue
+
+While we could deal with all the intricacies of the raw Census API, we thankfully don't have to.
+
+Why we'll use tidycensus instead.
+
+https://walker-data.com/tidycensus/index.html
+
+Let's talk why it's so helpful.
+
+#### Credentials
+
+First step to using it is loading your API Key credential. You thankfully only have to do this one time on your computer and it will create a little file that remembers it each time.
+
+```{r}
+
+# uncomment to run, then recomment it out so you don't run it every time
+
+# census_api_key("APIKEYCODE", install=TRUE)
+
+
+```
+
+Why might we not want to put our key in code that will be shared or visible publicly? Let's talk about the risk there.
+
+How might we get around that? Well there are a few ways, but one of the best and most straightforward to is store the actual key in what's called the .REnviron file on your computer...and then just pull from that place in the code. That way you can do something like this:
+
+```{r}
+
+# uncomment the line below to run - this assumes your key is saved in your .Renviron file
+
+# census_api_key(Sys.getenv("MYCENSUSAPIKEY"), install=TRUE)
+
+```
+
+How do we find the .Renviron file? Using the usethis package, it's super easy, barely an inconvenience. (Kudos to anyone who gets that reference.) Run this line in the console and it will automatically locate the file on your computer for you:
+
+`usethis::edit_r_environ()`
+
+If you never put anything there before, it will just be blank. That's ok. Put in a line that includes the name you want to call your saved secret variable, and then the value with it:
+
+`MYCENSUSAPIKEY='tktktktktktk'`
+
+Then save the file, restart the R session, and you're done.
+
+#### Census codes/variables
+
+And of course, remember trying to find those Census variables? There's tidycensus itself which helps gather them together for you too!
+
+```{r}
+
+censusvariables <- load_variables(2020, "acs5", cache = TRUE)
+
+
+```
+
+### Let's get started pulling some data
+
+```{r}
+#choose some census measures
+medincome <- "B19013_001"
+```
+
+Make the call for ACS data, which default to the latest ACS5 (in this case 2016-2020.
+
+```{r}
+
+get_acs(geography = "county", 
+        variables = medincome,
+        state = "VA")
+
+```
+
+Can set it to wide format too. That's easier for us to work with here.
+
+```{r}
+
+get_acs(geography = "county", 
+        variables = medincome,
+        state = "VA", 
+        output = "wide")
+```
+
+```{r}
+#let's add another variable to the mix
+medage  <- "B01002_001"
+
+#run it again for both income and age
+get_acs(geography = "county", variables = c(medincome, medage),
+        state = "VA")
+```
+
+```{r}
+#now we can see why wide is different
+get_acs(geography = "county", variables = c(medincome, medage),
+        state = "VA", output = "wide")
+```
+
+```{r}
+#we can also save a series of variables like this, to make our lives easier
+myvars <- c(totalpop = "B01003_001",
+            medincome = "B19013_001",
+            medage = "B01002_001"
+)
+```
+
+```{r}
+#watch what happens now - note the column names that persist...
+va_counties <- get_acs(geography = "county",
+                       variables = c(myvars),
+                       state = "VA",
+                       output = "wide")
+```
+
+```{r}
+#remove MOE columns - they all end with "M"
+va_counties <- va_counties %>%
+  select(-ends_with("M"))
+
+va_counties
+```
+
+```{r}
+#remove that trailing "E"
+colnames(va_counties) <- sub("E$", "", colnames(va_counties)) # $ means end of string only
+
+va_counties
+```
+
+```{r}
+### what if we want the mapping/geospatial boundaries too?
+va_counties_withgeo <- get_acs(geography = "county",
+                       variables = c(myvars),
+                       state = "VA",
+                       output = "wide",
+                       geometry = TRUE)
+
+va_counties_withgeo
+```
+
+```{r}
+#all counties in the US?
+all_counties_withgeo <- get_acs(geography = "county",
+                       variables = c(myvars),
+                       output = "wide",
+                       geometry = TRUE)
+
+all_counties_withgeo
+```
+
+
+## Making a detailed county-level demographics table
+
+```{r}
+myvars <- c(totalpop = "B01003_001",
+            medincome = "B19013_001",
+            medage = "B01002_001",
+            natborn_total = "B05012_001",
+            natborn_foreign = "B05012_003",
+            military_total = "B21001_001",
+            military_veteran = "B21001_002",
+            originrace_total_all = "B03002_001",
+            originrace_whitealone = "B03002_003",
+            education_total = "B06009_001",
+            education_bachelors = "B06009_005",
+            education_gradprofess = "B06009_006")
+```
+
+
+```{r}
+#Getting data for every state
+allcounties_wide <- get_acs(geography = "county",
+                         variables = c(myvars),
+                         output = "wide",
+                         geometry = TRUE)
+```
+
+
+```{r}
+#remove MOE columns - they all end with "M"
+allcounties_wide <- allcounties_wide %>%
+  select(-ends_with("M"))
+
+names(allcounties_wide)
+```
+
+
+```{r}
+# #cleaning up and splitting NAME into component parts
+allcounties_wide <- allcounties_wide %>%
+  mutate(
+    county_name = str_split(NAME, ",", simplify = TRUE)[ ,1],
+    state_name = str_split(NAME, ",", simplify = TRUE)[ ,2],
+    state_name = str_trim(state_name)
+  )
+```
+
+
+```{r}
+glimpse(allcounties_wide)
+```
+
+
+```{r}
+#bring new columns forward
+allcounties_wide <- allcounties_wide %>%
+  select(GEOID,
+         state_name,
+         county_name,
+         everything(),
+         -NAME)
+
+glimpse(allcounties_wide)
+```
+
+
+```{r}
+#clean up column names to remove trailing E
+#we do this here and not above to avoid losing the E in NAME until it's split and discarded
+colnames(allcounties_wide) <- sub("E$", "", colnames(allcounties_wide)) # $ means end of string only
+
+names(allcounties_wide)
+```
+
+
+```{r}
+#percentage calculations
+#-- tricky, since demo groups differ in columns
+#-- this might have to be done individually for each demographic grouping
+
+allcounties_wide <- allcounties_wide %>%
+  mutate(
+    pct_born_foreign = round_half_up(natborn_foreign / natborn_total * 100, 2),
+    pct_mil_veteran = round_half_up(military_veteran / military_total * 100, 2),
+    pct_race_white = round_half_up(originrace_whitealone / originrace_total_all * 100, 2),
+    pct_race_nonwhite = 100 - pct_race_white,
+    pct_ed_college_all = round_half_up((education_bachelors + education_gradprofess) / education_total * 100, 2),
+  )
+
+#remove unneeded columns
+allcounties_wide <- allcounties_wide %>%
+  select(-natborn_total,
+         -natborn_foreign,
+         -education_total,
+         -education_bachelors,
+         -education_gradprofess,
+         -military_total,
+         -military_veteran,
+         -originrace_total_all,
+         -originrace_whitealone
+  )
+```
+
+
+```{r}
+# save results for next steps
+saveRDS(allcounties_wide, here("data", "allcounties_wide_demographics.rds"))
+
+
+```
+

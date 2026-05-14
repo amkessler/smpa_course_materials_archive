@@ -1,0 +1,180 @@
+---
+title: "R Assignment - Initial Functions and APIs"
+author: "Your Name Here"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#first load the libraries we'll need
+library(tidyverse)
+library(nycflights13) # <- make sure to install this package 
+library(tigris)
+library(tidycensus)
+library(tmap)
+library(tmaptools)
+library(janitor)
+library(writexl)
+library(here)
+options(tigris_class = "sf")
+
+```
+
+# Functions
+
+1) Create a function that will return the sum of 2 numbers.
+
+```{r}
+
+
+
+
+
+```
+
+2) Create a function that will return the mean of a list of numbers fed to it. (Remember that in our case we're using the word "list" for easier understanding, but we're talking about a "vector" of numbers in R-speak.)
+
+```{r}
+
+
+
+
+
+
+```
+
+3) Now, expand on the function you made above, and instead of just returning the mean number alone, have it return the sentence:
+*"The mean is ___"*. (Where the blank is the mean.)
+
+```{r}
+
+
+
+
+
+```
+
+For these next two questions, we'll use the `flights` dataset from the package `nycflights13`. It contains records of individual airline flights departing at New York's three metro airports, JFK, LaGuardia (LGA) and Newark (EWR). Run the following chunk to load the data. (Make sure you've actually installed the package, of course.)
+
+```{r}
+#load the data to use for the rest of the assignment questions
+flights <- nycflights13::flights
+
+head(flights)
+```
+
+4) Using the `flights` dataset, create a function that filters the data frame to only include records from a single originating airport (column name `origin`). In other words, it should let you enter an origin airport and return all the records from just that airport.
+
+```{r}
+
+
+
+
+
+
+
+```
+
+5) Similarly, using the `flights` dataset, create a function that:
+
+-   filters the data frame to only include records from a single originating airport (column name `origin`), and then
+
+-   aggregates (i.e. counts) the results by airline (`carrier`) to show how many flights each airline has from that airport.
+
+```{r}
+
+
+
+
+
+
+```
+
+# Census Data
+
+In this section, fill in the necessary code to complete each step, using the [tidycensus](https://walker-data.com/tidycensus/index.html) package. We'll be downloading the data on populations with bachelor's and graduate/professional degrees.
+
+### Credentials
+
+First step to using tidycensus to interact with the U.S. Census Bureau's API is loading your API Key credential. You thankfully only have to do this one time on your computer and it will create a little file that remembers it each time afterwards.
+
+If you haven't already done so, make sure to request your personal API key from the Census here:
+
+https://api.census.gov/data/key_signup.html
+
+Uncomment the code below and run it to install your API key on your computer. Again, you only have to do this one time, so once it's install you can comment out the code again so it doesn't run every single time.
+
+```{r}
+
+# census_api_key("PUTYOURAPIKEYHERE", install=TRUE)
+
+
+```
+
+The census variables we'll use are provided for you here, so you don't have to look them up.
+
+```{r}
+myvars <- c(education_total = "B06009_001",
+            education_bachelors = "B06009_005",
+            education_gradprofess = "B06009_006")
+```
+
+Now, using the `get_acs()` function in tidycensus, pull down the state-level data for those variables. Additionally, make sure you also pull down the geospatial/mapping data tied to each state was well.
+
+```{r}
+
+
+
+
+
+```
+
+To make things a little cleaner, use the `select()` function to remove the three "margin of error" columns, which are denoted with their ending "M".
+
+```{r}
+
+
+
+
+
+```
+
+Now, using the `mutate()` function, create a new column that contains the percentage of people with a bachelor's or higher degree for each state. Remember that because the Census counts people with a bachelor's only vs. a graduate degree separately, you'll need to combine those categories before making your calculation against the total population column.
+
+```{r}
+
+
+
+
+
+```
+
+We'll now move to make a map of the continental U.S. showing the new percentage measure we've created.
+
+First, filter your data to remove Alaska, Hawaii and Puerto Rico.
+
+```{r}
+
+
+
+
+
+```
+
+Now, using the tmap() package, create a shaded map for the continental U.S. that shows the percentage of Bachelor's-and-higher populations in each state.
+
+```{r}
+
+
+
+
+
+
+
+```
+
+-- END ---

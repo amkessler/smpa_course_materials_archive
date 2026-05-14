@@ -1,0 +1,128 @@
+---
+title: "Intro to Data Analysis in R - Grouping Exercise"
+author: "Aaron Kessler"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the packages we'll need
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(writexl)
+library(janitor)
+
+```
+
+## Democratic Votes for Impeachment (First)
+
+Load the data
+
+```{r}
+# run this to load the data 
+# it will create a dataframe called "impeach," with all House Democrats and election results/demographics
+# it indicates whether or not the member publicly called for the impeachment 
+# note: THIS IS FOR THE FIRST TRUMP IMPEACHMENT IN 2020, NOT THE SECOND IN 2021
+
+impeach <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRh8d5JaDqBtByzNw2JZF3idaACobDhhk-p7chJoktA0HawELHFOvjQOqCpzGA4MGONvPlR7GASqW-K/pub?gid=1765341510&single=true&output=csv")
+```
+
+Questions - Write your code using grouping in the chunks below to help answer the following questions.
+
+```{r}
+# 1) How many members in the dataset who are holdouts on impeachment (NO in for_impeachment) vs. supporters (YES)?
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# 2) Answer this question using grouping.
+# Similar to #1 above, now break down the members of Congress by TWO measures:
+       # - those who are for or against impeachment
+       # - districts above/below national GDP
+
+
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# 3) Now do the same as #2, but this time instead of GDP look at above/below 
+# the national avg percent of college graduates (pct_bachelors_compared_to_national)
+
+
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# 4) Instead of showing the above/below national average counts for those for or 
+# against impeachment, this time show the combined MEAN percentage of college
+# grads (pct_bachelors) for districts that are Yes for impeachment vs. No
+
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# 5) Do the same as #4, but this time show the combined MEAN percentage of 
+# the vote that Donald Trump received for districts that are Yes for 
+# impeachment vs. No
+
+
+
+
+
+
+
+
+
+```
+
+
+```{r}
+# 6) Filter out only the members who are a yes for impeachment, 
+# then of those how many won their 2018 election by less than
+# 5 percentage points (margin_flag_2018) vs. more?
+  
+  
+
+
+
+
+
+
+
+```
+
