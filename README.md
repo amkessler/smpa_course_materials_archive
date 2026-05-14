@@ -7,6 +7,9 @@ Each original repository was copied into its own subdirectory. This archive does
 ## Directory Layout
 
 ```text
+2020-fall/
+  sessions/
+
 2021-spring/
   sessions/
 
@@ -30,7 +33,9 @@ Each original repository was copied into its own subdirectory. This archive does
 
 | Original repository | Archive path | Last push |
 |---|---|---|
+| `amkessler/gw_scraping_example` | `2020-fall/sessions/gw_scraping_example/` | 2020-11-24 |
 | `amkessler/gw_smpa_finalwrapsession` | `2021-spring/sessions/gw_smpa_finalwrapsession/` | 2021-04-27 |
+| `amkessler/gw_git_session` | `2021-spring/sessions/gw_git_session/` | 2021-03-24 |
 | `amkessler/gw_smpa_r_assignment_chartsmaps` | `2022-fall/assignments/gw_smpa_r_assignment_chartsmaps/` | 2022-11-17 |
 | `amkessler/gwsmpa_assignment_rfunctionsandcensusapi` | `2022-fall/assignments/gwsmpa_assignment_rfunctionsandcensusapi/` | 2022-11-22 |
 | `amkessler/gwsmpa_r_quarto_viz_functions` | `2022-fall/sessions/gwsmpa_r_quarto_viz_functions/` | 2022-11-14 |
